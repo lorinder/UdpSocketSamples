@@ -26,12 +26,18 @@ include(CheckSymbolExists)
 add_executable(udp_receiver
 	 udp_receiver.c       
 )
-target_link_libraries(udp_receiver csnip::csnip-static Ws2_32)
+target_link_libraries(udp_receiver csnip::csnip-static)
+if (WIN32)
+	target_link_libraries(udp_receiver Ws2_32)
+endif ()
 
 add_executable(udp_sender
 	udp_sender.c
 )
-target_link_libraries(udp_sender csnip::csnip-static Ws2_32)
+target_link_libraries(udp_sender csnip::csnip-static)
+if (WIN32)
+	target_link_libraries(udp_receiver Ws2_32)
+endif ()
 
 # Subdirectories
 
