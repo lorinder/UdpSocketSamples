@@ -11,39 +11,18 @@
 #include <ws2tcpip.h>
 #define inet_aton(str, addr)	inet_pton(AF_INET, (str), (addr))
 #else
+#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <arpa/inet.h>
 #endif
 
-#define CSNIP_SHORT_NAMES
-#include <csnip/clopts.h>
-#include <csnip/log.h>
-#include <csnip/mem.h>
-#include <csnip/time.h>
-
-#define CSNIP_LOG_COMPONENT		"udp_receiver"
-
 int main(int argc, char** argv)
 {
 	/* Default settings */
 	char* addr = "0.0.0.0";
 	int port = 4321;
-	size_t bufsize = 65536;
-
-	/* Scan command line arguments */
-	clopts opts = {
-		.description = "Simple UDP receiver app."
-	};
-	clopts_add_defaults(&opts);
-
-	clopts_Addvar(&opts, 'p', "port", "Receive end port", &port, _);
-	clopts_Addvar(&opts, 'b', "bind", "Bind address", &addr, _);
-	clopts_Addvar(&opts, 'S', "buf-size", "Packet buffer size", &bufsize, _);
-	if(clopts_process(&opts, argc - 1, argv + 1, NULL, true) != 0) {
-		return 1;
-	}
 
 	/* Initialize winsock */
 #ifdef __WIN32__
@@ -60,14 +39,14 @@ int main(int argc, char** argv)
 	/* Create the socket */
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (fd == -1) {
-		log_Perror(LOG_PRIO_ERR,  "socket()");
+		perror("socket()");
 		return 1;
 	}
 
 	/* Create the address */
 	struct in_addr ia;
 	if (inet_aton(addr, &ia) < 0) {
-		log_Perror(LOG_PRIO_ERR, "inet_aton()");
+		perror("inet_aton()");
 		return 1;
 	}
 	struct sockaddr_in sock_addr = {
@@ -79,28 +58,26 @@ int main(int argc, char** argv)
 	/* Bind */
 	if (bind(fd, (struct sockaddr*)&sock_addr, sizeof(sock_addr)) < 0)
 	{
-		log_Perror(LOG_PRIO_ERR, "bind()");
+		perror("bind()");
 		return 1;
 	}
 
-
-	/* receiver buffer allocation */
-	char* payload;
-	mem_Alloc(bufsize, payload, _);
-
 	/* Recv loop */
-	while (1) {
+	puts("Awaiting 3 messages:");
+	char buf[8192];
+	for (int i = 0; i < 3; ++i) {
 		/* Receive data */
-		ssize_t s = recv(fd, payload, bufsize, 0);
+		int s = (int)recv(fd, buf, (sizeof buf) - 1, 0);
 		if (s < 0) {
-			log_Perror(LOG_PRIO_ERR, "recv()");
-			break;
+			perror("recv()");
+			return 1;
 		}
+		buf[s] = '\0';
 
 		/* Report */
-		printf("Received a packet of size %zd\n", s);
+		printf("  Received \"%s\"\n", buf);
 	}
 
+	close(fd);
 	return 0;
-
 }

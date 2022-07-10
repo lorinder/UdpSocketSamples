@@ -5,38 +5,29 @@ project(UdpSocketSamples
 	LANGUAGES C CXX
 )
 
-# Add module path
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
-
-include(EnableWarnings)
-# include(FindPkgConfig)
-
-#set(THREADS_PREFER_PTHREAD_FLAG ON)
-#find_package(Threads REQUIRED)
-find_package(csnip REQUIRED)
-#pkg_check_modules(Libevent REQUIRED IMPORTED_TARGET libevent_pthreads)
-
-# Environment configuration
-include(CheckSymbolExists)
-#check_symbol_exists(UDP_SEGMENT "netinet/udp.h" HAVE_UDP_SEGMENT)
-#check_symbol_exists(UDP_GRO "netinet/udp.h" HAVE_UDP_GRO)
+# Enable compiler warnings
+if (CMAKE_C_COMPILER_ID MATCHES GNU OR CMAKE_C_COMPILER_ID MATCHES CLANG)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
+endif ()
+if (CMAKE_CXX_COMPILER_ID MATCHES GNU OR
+  CMAKE_CXX_COMPILER_ID MATCHES CLANG)
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif ()
 
 # Targets
 
-add_executable(udp_receiver
-	 udp_receiver.c       
+add_executable(recv
+	 recv.c       
 )
-target_link_libraries(udp_receiver csnip::csnip-static)
 if (WIN32)
-	target_link_libraries(udp_receiver Ws2_32)
+	target_link_libraries(recv Ws2_32)
 endif ()
 
-add_executable(udp_sender
-	udp_sender.c
+add_executable(sender
+	sender.c
 )
-target_link_libraries(udp_sender csnip::csnip-static)
 if (WIN32)
-	target_link_libraries(udp_receiver Ws2_32)
+	target_link_libraries(sender Ws2_32)
 endif ()
 
 # Subdirectories
