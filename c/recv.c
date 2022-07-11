@@ -6,12 +6,16 @@
 #include <string.h>
 #include <time.h>
 
+#if !defined(_MSC_VER)
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 #ifdef __WIN32__
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #define inet_aton(str, addr)	inet_pton(AF_INET, (str), (addr))
 #else
-#include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/ip.h>
 #include <netinet/udp.h>

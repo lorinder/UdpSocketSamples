@@ -6,6 +6,11 @@
 #include <string.h>
 #include <time.h>
 
+#if !defined(_MSC_VER)
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 #ifdef __WIN32__
 #include <winsock2.h>
 #include <ws2tcpip.h>
